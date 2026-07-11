@@ -159,6 +159,24 @@ int main( int argc, char *argv[] )
 //********************************
 //********************************
 
+//********************************
+//FRUITJAM MAIN ******************
+#ifdef FRUITJAM
+int main( void )
+{
+    {
+	//TODO: board/clock bring-up before anything else touches hardware:
+	//  stdio_init_all();		//if you're keeping a debug UART/USB-CDC path
+	//  set_sys_clock_khz(...);	//if you need a non-default system clock
+	//  (PicoDVI and I2S clock setup usually happens inside device_start()/
+	//  device_sound_stream_init() instead, since those own their peripherals)
+	int argc = 1;
+	UTF8_CHAR *argv_storage[ 1 ] = { (UTF8_CHAR*)"prog" };
+	UTF8_CHAR **argv = argv_storage;
+#endif
+//********************************
+//********************************
+
 	int err_count = 0;
 
 	debug_set_output_file( user_debug_log_file_name );

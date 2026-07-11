@@ -23,6 +23,9 @@
     #include <windows.h>
     #include <time.h>
 #endif
+#ifdef FRUITJAM
+    #include "pico/time.h"	//time_us_64()
+#endif
 
 ulong time_hours( void )
 {
@@ -49,6 +52,12 @@ ulong time_hours( void )
     SYSTEMTIME st;
     GetLocalTime( &st );
     return st.wHour;
+#endif
+#ifdef FRUITJAM
+    //FRUITJAM: RP2350 has no battery-backed RTC by default.
+    //TODO: wire this to the Pico SDK's hardware RTC (datetime_t) once it's been set from a
+    //known-good source (SD card file, USB host clock, etc). Returning 0 until then.
+    return 0;
 #endif
 }
 
@@ -78,6 +87,10 @@ ulong time_minutes( void )
     GetLocalTime( &st );
     return st.wMinute;
 #endif
+#ifdef FRUITJAM
+    //FRUITJAM: see time_hours() - stub until an RTC source is wired up.
+    return 0;
+#endif
 }
 
 ulong time_seconds( void )
@@ -106,6 +119,10 @@ ulong time_seconds( void )
     GetLocalTime( &st );
     return st.wSecond;
 #endif
+#ifdef FRUITJAM
+    //FRUITJAM: see time_hours() - stub until an RTC source is wired up.
+    return 0;
+#endif
 }
 
 ticks_t time_ticks_per_second( void )
@@ -120,6 +137,10 @@ ticks_t time_ticks_per_second( void )
 #endif
 #if defined(WIN) || defined(WINCE)
     //WINDOWS:
+    return (ticks_t)1000;
+#endif
+#ifdef FRUITJAM
+    //FRUITJAM: ticks expressed in milliseconds, same convention as UNIX/WIN.
     return (ticks_t)1000;
 #endif
 }
@@ -150,6 +171,11 @@ ticks_t time_ticks( void )
 #if defined(WIN) || defined(WINCE)
     //WINDOWS:
     return (ticks_t)GetTickCount();
+#endif
+#ifdef FRUITJAM
+    //FRUITJAM: Pico SDK's time_us_64() gives a monotonic microsecond counter
+    //since boot (backed by the RP2350's always-on timer). Divide down to ms.
+    return (ticks_t)( time_us_64() / 1000 );
 #endif
 }
 

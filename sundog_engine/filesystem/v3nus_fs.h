@@ -28,6 +28,10 @@
     #include "unistd.h" //for current dir getting 
 #endif
 
+#ifdef FRUITJAM
+    #include "ff.h" //FatFS - DIR, FILINFO, f_findfirst/f_findnext/f_stat
+#endif
+
 #define MAX_DISKS	    16
 #define DISKNAME_SIZE	    4
 #define MAX_DIR_LEN	    1024
@@ -167,6 +171,11 @@ struct find_struct
 #ifdef UNIX
     DIR *dir;
     struct dirent *current_file;
+    UTF8_CHAR new_start_dir[ MAX_DIR_LEN ];
+#endif
+#ifdef FRUITJAM
+    DIR fj_dir;			//FatFS directory object
+    FILINFO fj_fileinfo;	//FatFS f_findfirst/f_findnext result
     UTF8_CHAR new_start_dir[ MAX_DIR_LEN ];
 #endif
 };

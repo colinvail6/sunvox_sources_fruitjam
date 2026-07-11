@@ -337,4 +337,14 @@ void device_redraw_framebuffer( window_manager *wm )
 #endif
 #endif
 #endif
+
+#ifdef FRUITJAM
+    if( wm->screen_lock_counter == 0 )
+    {
+	//TODO: if `framebuffer` points directly at PicoDVI's own buffer memory and
+	//PicoDVI free-runs via DMA, this can stay a no-op. If PicoDVI instead needs
+	//an explicit present/flip call (e.g. after a page-flip-style double buffer),
+	//make that call here - e.g. picodvi_present( framebuffer );
+    }
+#endif
 }

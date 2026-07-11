@@ -42,6 +42,10 @@ int g_first_play = 1;
     #include "sound_sndout_win.h"
 #endif
 
+#ifdef FRUITJAM
+    #include "sound_sndout_fruitjam.h"
+#endif
+
 int sound_stream_init( int mode, int freq, int channels )
 {
 #ifdef OUTPUT_TO_FILE

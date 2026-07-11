@@ -31,12 +31,14 @@
 //#define SMALLMEMORY
 //#define ARCH_ARM
 //#define ARCH_X86
+//#define FRUITJAM	//OS = bare-metal Pico SDK on Adafruit Fruit Jam (RP2350B)
 
 //Variations:
 //WIN32:  COLOR32BITS + WIN [ + OPENGL / DIRECTDRAW / GDI + RGB555 / FRAMEBUFFER ]
 //LINUX:  COLOR32BITS + LINUX [ + OPENGL / DIRECTDRAW / X11 / FRAMEBUFFER ]
 //PALMOS: COLOR8BITS + PALMOS [ + NOSTORAGE / PALMLOWRES / SLOWMODE / DIRECTDRAW ]
 //WINCE:  COLOR16BITS + WINCE [ + GDI + RGB555 / FRAMEBUFFER / DIRECTDRAW ]
+//FRUITJAM: COLOR32BITS + FRUITJAM + FRAMEBUFFER [ + SMALLMEMORY / SMALLCACHE ]
 
 //Examples:
 //WIN32:  ARCH_X86, WIN, COLOR32BITS, GDI
@@ -46,6 +48,13 @@
 //PALMOS: ARCH_ARM, PALMOS, COLOR8BITS, DIRECTDRAW
 //WINCE:  ARCH_ARM, WINCE, COLOR16BITS, GDI, RGB555
 //WINCE:  ARCH_ARM, WINCE, COLOR16BITS, DIRECTDRAW
+//FRUITJAM: ARCH_ARM, FRUITJAM, COLOR32BITS, FRAMEBUFFER, SMALLMEMORY
+
+#ifdef FRUITJAM
+    #define FRAMEBUFFER
+    #define ONLY44100	//keep the audio path simple for first bring-up; relax once I2S clocking is proven
+    #define NODEBUG	//no stdio/log-file target yet - enable once UART/USB-CDC debug output exists
+#endif
 
 typedef unsigned char   uchar;
 typedef unsigned short  uint16;

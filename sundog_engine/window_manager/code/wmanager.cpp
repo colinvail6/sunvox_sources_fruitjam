@@ -2075,6 +2075,10 @@ void fix_fullscreen_resolution( int *xsize, int *ysize, window_manager *wm )
     #endif
 #endif
 
+#ifdef FRUITJAM
+    #include "wm_fruitjam.h"
+#endif
+
 //###################################
 //###################################
 //###################################

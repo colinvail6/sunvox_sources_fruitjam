@@ -183,6 +183,37 @@ UTF8_CHAR* get_temp_path( void )
     return (UTF8_CHAR*)"/tmp/";
 }
 #endif
+#ifdef FRUITJAM
+//FRUITJAM: single SD card volume, FatFS drive "A:/". (NOTE: "0:/" is reserved
+//elsewhere in v3nus_fs for the virtual TAR-archive disk - do not reuse it here.)
+//No getcwd()/getenv() equivalent, so current/user/temp paths are all just the SD root for now.
+void get_disks( void )
+{
+    disks = 1;
+    disk_names[ 0 ] = 'A';
+    disk_names[ 1 ] = ':';
+    disk_names[ 2 ] = '/';
+    disk_names[ 3 ] = 0;
+}
+long get_current_disk( void )
+{
+    return 0;
+}
+UTF8_CHAR* get_current_path( void )
+{
+    return (UTF8_CHAR*)"A:/";
+}
+UTF8_CHAR* get_user_path( void )
+{
+    return (UTF8_CHAR*)"A:/";
+}
+UTF8_CHAR* get_temp_path( void )
+{
+    //TODO: once storage headroom is known, consider a dedicated A:/tmp/ dir
+    //(created at boot with f_mkdir if it doesn't already exist).
+    return (UTF8_CHAR*)"A:/";
+}
+#endif
 #ifdef WINCE
 void get_disks( void )
 {
@@ -983,7 +1014,10 @@ V3_FILE v3_open( const UTF8_CHAR *filename, const UTF8_CHAR *filemode )
 	v3_fd[ a ]->filename[ 0 ] = 0;
 	mem_strcat( v3_fd[ a ]->filename, filename );
 	//Open it:
-#if defined(PALMOS) || defined(UNIX)
+#if defined(PALMOS) || defined(UNIX) || defined(FRUITJAM)
+	//FRUITJAM: relies on newlib's _open/_read/_write/_close/_lseek syscalls being
+	//retargeted to FatFS (standard Pico SDK + FatFS pattern - not Sundog-specific).
+	//Once that retarget layer exists, plain fopen() here just works.
 	v3_fd[ a ]->f = (unsigned long)fopen( filename, filemode );
 #endif
 #if defined(WIN) || defined(WINCE)
@@ -1541,6 +1575,57 @@ int find_next( find_struct *fs )
 void find_close( find_struct *fs )
 {
     closedir( fs->dir );
+}
+
+#endif
+#ifdef FRUITJAM
+//FRUITJAM: FatFS's f_findfirst/f_findnext already do most of the work check_file()
+//does by hand for UNIX, but we still run it for consistency with mask handling
+//used elsewhere in v3nus_fs.
+
+int find_first( find_struct *fs )
+{
+    fs->new_start_dir[ 0 ] = 0;
+    if( fs->start_dir[ 0 ] == 0 )
+	mem_strcat( fs->new_start_dir, "A:/" );
+    else
+	mem_strcat( fs->new_start_dir, fs->start_dir );
+
+    FRESULT res = f_findfirst( &fs->fj_dir, &fs->fj_fileinfo, fs->new_start_dir, "*" );
+    if( res != FR_OK || fs->fj_fileinfo.fname[ 0 ] == 0 ) return 0; //no such dir, or empty
+
+    fs->name[ 0 ] = 0;
+    mem_strcat( fs->name, (const UTF8_CHAR*)fs->fj_fileinfo.fname );
+    fs->type = ( fs->fj_fileinfo.fattrib & AM_DIR ) ? TYPE_DIR : TYPE_FILE;
+
+    if( fs->type == TYPE_FILE )
+	if( !check_file( fs->name, fs ) ) return find_next( fs );
+
+    return 1;
+}
+
+int find_next( find_struct *fs )
+{
+    for(;;)
+    {
+	FRESULT res = f_findnext( &fs->fj_dir, &fs->fj_fileinfo );
+	if( res != FR_OK || fs->fj_fileinfo.fname[ 0 ] == 0 ) return 0; //no more files
+
+	fs->name[ 0 ] = 0;
+	mem_strcat( fs->name, (const UTF8_CHAR*)fs->fj_fileinfo.fname );
+	fs->type = ( fs->fj_fileinfo.fattrib & AM_DIR ) ? TYPE_DIR : TYPE_FILE;
+
+	if( fs->type == TYPE_FILE )
+	{
+	    if( check_file( fs->name, fs ) ) return 1;
+	}
+	else return 1; //Dir found
+    }
+}
+
+void find_close( find_struct *fs )
+{
+    f_closedir( &fs->fj_dir );
 }
 
 #endif
