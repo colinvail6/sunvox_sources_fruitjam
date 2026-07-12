@@ -60,6 +60,7 @@ add_executable(sundog_fruitjam
     ${SUNDOG_DIR}/sound/code/sound_player.cpp
     ${SUNDOG_DIR}/sound/code/sound_sndout.cpp
     ${SUNDOG_DIR}/window_manager/code/wmanager.cpp
+    ${SUNDOG_DIR}/window_manager/code/dvi_fruitjam.c
     ${SUNDOG_DIR}/window_manager/code/image.cpp
     ${SUNDOG_DIR}/window_manager/regions/devrgn.cpp
     ${SUNDOG_DIR}/utils/code/utils.cpp
@@ -70,7 +71,8 @@ add_executable(sundog_fruitjam
 
 target_compile_definitions(sundog_fruitjam PRIVATE
     FRUITJAM
-    COLOR32BITS
+    COLOR16BITS
+    RGB565
     ARCH_ARM
 )
 

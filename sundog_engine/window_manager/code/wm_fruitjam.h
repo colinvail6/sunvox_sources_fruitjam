@@ -7,15 +7,12 @@
     wm_framebuffer.h (see #include at the bottom) - they already operate on
     a plain pitch-addressed `framebuffer` array, so they need no changes.
 
-    TODO before this compiles: the PicoDVI init/present calls and the
-    TinyUSB HID polling are placeholders. Swap them for whatever PicoDVI
-    library and TinyUSB host API you're using - the event-queueing and
-    window_manager field usage around them is the part that has to stay
-    correct.
+    Display (dvi_fruitjam.c/.h) is now wired up. TinyUSB HID input is still
+    a TODO.
 */
 
 #include "pico/stdlib.h"
-//TODO: #include your PicoDVI library header (framebuffer init/present)
+#include "dvi_fruitjam.h"
 //TODO: #include "tusb.h" or your TinyUSB host wrapper header
 
 COLORPTR framebuffer = 0; //same convention as wm_unixgraphics.h / wm_win32.h etc.
@@ -31,15 +28,19 @@ int device_start( const UTF8_CHAR *windowname, int xsize, int ysize, int flags, 
     wm->screen_lock_counter = 0;
     wm->screen_is_active = 1;
 
-    wm->fb_xpitch = 1;			//COLOR32BITS -> COLORPTR indexes whole pixels
-    wm->fb_ypitch = xsize;		//no padding between scanlines for now
+    wm->fb_xpitch = 1;			//COLOR16BITS -> COLORPTR indexes whole pixels
+    wm->fb_ypitch = xsize;		//no padding between scanlines
     wm->fb_offset = 0;
 
-    //TODO: init PicoDVI here for `xsize`x`ysize` @ 32bpp, and point `framebuffer`
-    //at its buffer memory directly (avoids an extra copy in device_redraw_framebuffer):
-    //  framebuffer = (COLORPTR)picodvi_get_framebuffer();
-    //If your PicoDVI setup can't hand you a persistent pointer, allocate our own
-    //and copy it across in device_redraw_framebuffer instead:
+    //Sundog owns this buffer (COLORLEN=2 for COLOR16BITS -> RGB565, matching
+    //dvi_fruitjam.c exactly). dvi_init() below hands the DMA engine this same
+    //pointer directly, so there's no copy step - Sundog draws into `framebuffer`
+    //and the DVI output reflects it continuously, with no explicit present call.
+    if( xsize != 640 || ysize != 480 )
+    {
+	dprint( "ERROR: Fruit Jam DVI driver is fixed at 640x480, got %dx%d\n", xsize, ysize );
+	return 1;
+    }
     framebuffer = (COLORPTR)MEM_NEW( HEAP_STORAGE, (long)xsize * ysize * COLORLEN );
     if( !framebuffer )
     {
@@ -47,6 +48,8 @@ int device_start( const UTF8_CHAR *windowname, int xsize, int ysize, int flags, 
 	return 1; //non-zero = failure, matches win_init()'s contract in main.cpp
     }
     mem_set( framebuffer, (long)xsize * ysize * COLORLEN, 0 );
+
+    dvi_init( (uint16_t*)framebuffer );
 
     //TODO: init TinyUSB host mode here (tuh_init(), root hub port, etc).
 
@@ -56,7 +59,9 @@ int device_start( const UTF8_CHAR *windowname, int xsize, int ysize, int flags, 
 
 void device_end( window_manager *wm )
 {
-    //TODO: tear down PicoDVI / stop DMA-driven display refresh here.
+    //dvi_fruitjam.c has no explicit teardown (matches wili8jam - the DMA/HSTX
+    //setup is meant to run for the device's lifetime). Nothing to stop here
+    //beyond freeing our own buffer.
 
     if( framebuffer ) mem_free( framebuffer );
     framebuffer = 0;

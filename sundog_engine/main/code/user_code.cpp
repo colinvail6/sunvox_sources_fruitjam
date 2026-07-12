@@ -9,14 +9,14 @@
 
 #include "../user_code.h"
 
-//TODO: confirm against the actual Fruit Jam DVI resolution you bring up in
-//wm_fruitjam.h's device_start() - this just needs to match whatever xsize/ysize
-//you pass to win_init() there.
 const UTF8_CHAR *user_window_name = (const UTF8_CHAR*)"Sundog Fruit Jam";
 const UTF8_CHAR *user_profile_name = (const UTF8_CHAR*)"A:/sundog.ini";
 const UTF8_CHAR *user_debug_log_file_name = 0; //no log file yet - NODEBUG is set in core.h anyway
-int user_window_xsize = 720;
-int user_window_ysize = 400;
+
+//Fixed at 640x480 to match dvi_fruitjam.c's native (unscaled) HSTX DVI timing -
+//device_start() in wm_fruitjam.h will reject any other size.
+int user_window_xsize = 640;
+int user_window_ysize = 480;
 int user_window_flags = 0;
 
 void user_init( window_manager *wm )
