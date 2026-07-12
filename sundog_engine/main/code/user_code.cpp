@@ -7,7 +7,7 @@
     own, before wiring in a real interpreter on top.
 */
 
-#include "user_code.h"
+#include "../user_code.h"
 
 //TODO: confirm against the actual Fruit Jam DVI resolution you bring up in
 //wm_fruitjam.h's device_start() - this just needs to match whatever xsize/ysize
