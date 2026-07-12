@@ -18,6 +18,7 @@
 
 #include "pico/stdlib.h"
 #include "hardware/dma.h"
+#include <cstdlib>	//malloc/free
 //TODO: #include "hardware/i2s.h" or your chosen I2S driver's header
 
 #define FJ_NUM_BUFFERS	2
