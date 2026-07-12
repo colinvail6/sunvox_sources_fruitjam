@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PICO_PLATFORM rp2350)
 set(PICO_BOARD adafruit_fruit_jam CACHE STRING "Board type")
+set(PICO_PIO_USB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Pico-PIO-USB)
 
 if(WIN32)
     set(USERHOME $ENV{USERPROFILE})
@@ -32,9 +33,15 @@ add_library(fatfs STATIC
     fatfs/ffunicode.c
     fatfs/ffsystem.c
     fatfs/diskio.c
+    fatfs/sdcard.c
 )
 target_include_directories(fatfs PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/fatfs
+)
+target_link_libraries(fatfs PUBLIC
+    pico_stdlib
+    hardware_spi
+    hardware_gpio
 )
 
 # --- USB Host (reuse wili8jam's usb-host/ tree wholesale if you copy it in) ---
@@ -61,7 +68,6 @@ add_executable(sundog_fruitjam
 target_compile_definitions(sundog_fruitjam PRIVATE
     FRUITJAM
     COLOR32BITS
-    FRAMEBUFFER
     ARCH_ARM
 )
 
