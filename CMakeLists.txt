@@ -52,6 +52,7 @@ set(SUNDOG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sundog_engine)
 
 add_executable(sundog_fruitjam
     ${SUNDOG_DIR}/main/code/main.cpp
+    ${SUNDOG_DIR}/main/code/user_code.cpp
     ${SUNDOG_DIR}/core/code/debug.cpp
     ${SUNDOG_DIR}/memory/code/memory.cpp
     ${SUNDOG_DIR}/filesystem/code/v3nus_fs.cpp
@@ -59,6 +60,8 @@ add_executable(sundog_fruitjam
     ${SUNDOG_DIR}/sound/code/sound_player.cpp
     ${SUNDOG_DIR}/sound/code/sound_sndout.cpp
     ${SUNDOG_DIR}/window_manager/code/wmanager.cpp
+    ${SUNDOG_DIR}/window_manager/code/image.cpp
+    ${SUNDOG_DIR}/window_manager/regions/devrgn.cpp
     ${SUNDOG_DIR}/utils/code/utils.cpp
     # TinyUSB host stack — must be compiled into the executable, same reasoning
     # as wili8jam's comment: avoids duplicate symbols with the device stack.
@@ -91,8 +94,6 @@ target_link_libraries(sundog_fruitjam PRIVATE
     hardware_clocks
     hardware_i2c
 )
-
-target_compile_definitions(sundog_fruitjam PRIVATE PICO_STACK_SIZE=0x2000)
 
 pico_enable_stdio_usb(sundog_fruitjam 1)
 pico_enable_stdio_uart(sundog_fruitjam 0)

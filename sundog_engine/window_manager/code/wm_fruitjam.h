@@ -81,7 +81,7 @@ long device_event_handler( window_manager *wm )
     return 0;
 }
 
-void device_screen_lock( window_manager *wm )
+void device_screen_lock( WINDOWPTR win, window_manager *wm )
 {
     if( wm->screen_lock_counter == 0 )
     {
@@ -95,7 +95,7 @@ void device_screen_lock( window_manager *wm )
 	wm->screen_is_active = 0;
 }
 
-void device_screen_unlock( window_manager *wm )
+void device_screen_unlock( WINDOWPTR win, window_manager *wm )
 {
     if( wm->screen_lock_counter == 1 )
     {
